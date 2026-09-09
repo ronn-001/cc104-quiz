@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC104 Quiz Reviewer — Weeks 7–9, 11, 12</title>
+<style>
+  :root{
+    --bg:#12181f;
+    --panel:#1a222c;
+    --panel-border:#2a3644;
+    --text:#e7ecf1;
+    --muted:#8ea0b3;
+    --accent:#5ec8a6;
+    --accent-dim:#3a7f6a;
+    --wrong:#e0714f;
+    --amber:#e0b04f;
+    --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    padding-bottom:80px;
+  }
+  .topbar{
+    position:sticky;top:0;z-index:10;
+    background:rgba(18,24,31,0.94);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--panel-border);
+    padding:14px 20px;
+  }
+  .topbar-inner{
+    max-width:820px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+    letter-spacing:0.3px;
+  }
+  .progress-wrap{
+    flex:1;max-width:280px;height:6px;background:#232d38;border-radius:4px;overflow:hidden;
+  }
+  .progress-bar{
+    height:100%;width:0%;background:var(--accent);transition:width .2s ease;
+  }
+  .progress-count{
+    font-family:var(--mono);font-size:12px;color:var(--muted);min-width:52px;text-align:right;
+  }
+
+  header.hero{
+    max-width:820px;margin:0 auto;padding:48px 20px 12px;
+  }
+  header.hero h1{
+    font-size:28px;margin:0 0 8px;font-weight:700;letter-spacing:-0.3px;
+  }
+  header.hero p{
+    color:var(--muted);margin:0 0 4px;font-size:14.5px;max-width:60ch;
+  }
+  .scope-tags{
+    display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;
+  }
+  .scope-tags span{
+    font-family:var(--mono);font-size:11.5px;color:var(--accent);
+    border:1px solid var(--accent-dim);padding:4px 9px;border-radius:5px;
+  }
+
+  main{max-width:820px;margin:0 auto;padding:12px 20px;}
+
+  .qcard{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:20px 20px 18px;
+    margin-bottom:14px;
+  }
+  .qnum{
+    font-family:var(--mono);color:var(--accent);font-size:12.5px;margin-bottom:6px;display:block;
+  }
+  .qtext{
+    font-size:15.5px;margin:0 0 14px;font-weight:600;
+  }
+  .qtext code{
+    font-family:var(--mono);background:#0f151b;padding:1px 5px;border-radius:4px;font-size:0.92em;color:var(--amber);
+  }
+  .options{display:flex;flex-direction:column;gap:8px;}
+  .option{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:10px 12px;border-radius:7px;
+    border:1px solid #263140;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+    font-size:14.5px;
+  }
+  .option:hover{border-color:var(--accent-dim);background:#1e2a34;}
+  .option input{margin-top:3px;accent-color:var(--accent);flex-shrink:0;}
+  .option.selected{border-color:var(--accent);background:#1c2b28;}
+
+  /* graded states */
+  .option.correct-answer{border-color:var(--accent);background:#173028;}
+  .option.wrong-answer{border-color:var(--wrong);background:#33201a;}
+  .qcard.graded{opacity:0.98;}
+  .verdict{
+    font-family:var(--mono);font-size:11.5px;margin-top:10px;padding-top:10px;
+    border-top:1px dashed #2a3644;color:var(--muted);
+  }
+  .verdict.ok{color:var(--accent);}
+  .verdict.no{color:var(--wrong);}
+
+  .submit-bar{
+    position:sticky;bottom:0;
+    background:rgba(18,24,31,0.97);
+    backdrop-filter:blur(6px);
+    border-top:1px solid var(--panel-border);
+    padding:14px 20px;
+    display:flex;justify-content:center;
+    z-index:10;
+  }
+  .btn{
+    font-family:var(--sans);font-weight:600;font-size:14.5px;
+    padding:12px 26px;border-radius:8px;border:none;cursor:pointer;
+    background:var(--accent);color:#0e1a16;
+    transition:filter .12s ease, transform .05s ease;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(0.98);}
+  .btn.secondary{
+    background:transparent;color:var(--text);border:1px solid var(--panel-border);
+  }
+  .btn.secondary:hover{border-color:var(--accent-dim);}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .unanswered-note{
+    font-family:var(--mono);font-size:12px;color:var(--amber);text-align:center;margin-bottom:8px;
+  }
+
+  /* results panel */
+  .results{
+    max-width:820px;margin:0 auto;padding:0 20px 20px;
+    display:none;
+  }
+  .results.show{display:block;}
+  .score-card{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;
+    padding:32px 28px;text-align:center;margin-bottom:24px;
+  }
+  .score-num{
+    font-family:var(--mono);font-size:52px;font-weight:700;color:var(--accent);line-height:1;
+  }
+  .score-sub{color:var(--muted);margin-top:6px;font-size:14.5px;}
+  .score-msg{margin-top:14px;font-size:15px;}
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap;}
+
+  .quiz-body.hidden{display:none;}
+
+  @media (max-width:480px){
+    header.hero h1{font-size:23px;}
+    .score-num{font-size:42px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">CC104 // QUIZ REVIEWER</span>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <span class="progress-count" id="progressCount">0/100</span>
+  </div>
+</div>
+
+<header class="hero">
+  <h1>CC104 Quiz Reviewer</h1>
+  <p>100 items covering C++ fundamentals and control flow, arrays/structures/enums/linked lists, queues, and priority queues. Answer everything, then check your score — you can retry as many times as you want.</p>
+  <div class="scope-tags">
+    <span>Weeks 7–9: C++ &amp; Data Structures Basics</span>
+    <span>Week 11: Queues</span>
+    <span>Week 12: Priority Queues</span>
+  </div>
+</header>
+
+<main>
+  <div class="unanswered-note" id="unansweredNote" style="display:none;"></div>
+  <div id="quizBody" class="quiz-body"></div>
+</main>
+
+<div class="submit-bar" id="submitBar">
+  <button class="btn" id="submitBtn">Submit Quiz</button>
+</div>
+
+<div class="results" id="resultsPanel">
+  <div class="score-card">
+    <div class="score-num" id="scoreNum">0/100</div>
+    <div class="score-sub" id="scorePct">0%</div>
+    <div class="score-msg" id="scoreMsg"></div>
+    <div class="actions">
+      <button class="btn" id="retryBtn">Retry Quiz</button>
+      <button class="btn secondary" id="reviewBtn">Review Answers</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+// ---------------- WEEK 7: C++ FUNDAMENTALS ----------------
+{q:"What does <code>#include &lt;iostream&gt;</code> provide to a C++ program?", o:["Standard input/output tools such as cin and cout","A random number generator","Memory management functions","File compression utilities"], a:0},
+{q:"What is the purpose of <code>using namespace std;</code>?", o:["It compiles the program faster","It allows common standard-library names to be used without repeatedly writing std::","It declares all variables as static","It imports the iostream library"], a:1},
+{q:"Where does execution of a C++ program begin?", o:["The first line of the file","Inside the class constructor","int main()","Inside the #include section"], a:2},
+{q:"What is the purpose of curly braces <code>{ }</code> in C++?", o:["They define a block of code","They start a comment","They declare a pointer","They end the program"], a:0},
+{q:"What does <code>cout</code> do?", o:["Reads data entered by the user","Displays information on the console","Declares a constant","Ends the program"], a:1},
+{q:"What does <code>return 0;</code> at the end of main() indicate?", o:["An error occurred","The program will restart","Successful completion of the program","A loop should continue"], a:2},
+{q:"Which operator does <code>cout</code> use to send data to the output stream?", o:[">> (extraction operator)","<< (insertion operator)","== (equality operator)",":: (scope resolution operator)"], a:1},
+{q:"Which operator does <code>cin</code> use to read data entered by the user?", o:["<<","::","->",">>"], a:3},
+{q:"Which function should be used to read a full line of input containing spaces?", o:["cin >> name;","getline(cin, name);","read(name);","cin.get(name);"], a:1},
+{q:"What is a variable in C++?", o:["A fixed value that never changes","A named storage location whose value can change while the program runs","A type of function","A comment in the code"], a:1},
+{q:"Which keyword is used to declare a value that cannot be changed after initialization?", o:["static","const","void","final"], a:1},
+{q:"Which data type is used to store whole numbers?", o:["float","string","int","bool"], a:2},
+{q:"Which data type stores decimal values with greater precision than float?", o:["double","char","int","bool"], a:0},
+{q:"Which data type is used to store a single character, such as 'A'?", o:["string","char","int","bool"], a:1},
+{q:"Which data type is used to store true/false values?", o:["char","bool","int","double"], a:1},
+{q:"Given <code>int a = 17; int b = 5;</code>, what is the result of <code>a / b</code>?", o:["3.4","3","2","17"], a:1},
+{q:"Given <code>int a = 17; int b = 5;</code>, what is the result of <code>a % b</code>?", o:["0","3","5","2"], a:3},
+{q:"Which operator checks whether two values are equal?", o:["=","==","!=",":="], a:1},
+{q:"Which operator represents the logical AND, requiring all conditions to be true?", o:["||","&&","!","=="], a:1},
+{q:"Which operator reverses a Boolean result?", o:["!","&&","||","%"], a:0},
+
+// ---------------- WEEK 8: DECISION MAKING & LOOPS ----------------
+{q:"Which structure executes one block of code if a condition is true and another block if it is false?", o:["switch","for loop","if-else","enum"], a:2},
+{q:"Which structure should be used when several alternative conditions must be evaluated in sequence?", o:["else-if ladder","do-while loop","struct","array"], a:0},
+{q:"What is a nested if?", o:["An if statement written in another file","An if placed inside another if's decision","A loop inside a switch","A function with no return value"], a:1},
+{q:"A <code>switch</code> statement is most useful when an expression is compared against:", o:["A single boolean condition","Several discrete choices","A range of decimal values","Nothing — it always runs every case"], a:1},
+{q:"What is the purpose of <code>break</code> inside a switch case?", o:["It ends the entire program","It prevents execution from continuing into the next case","It restarts the switch from case 1","It skips the current case only"], a:1},
+{q:"In a switch statement, which label runs when no case matches?", o:["default","else","otherwise","case 0"], a:0},
+{q:"In a for loop's header <code>for(int i=1; i&lt;=5; i++)</code>, what is the role of <code>int i = 1</code>?", o:["It controls whether another iteration occurs","It starts the counter","It changes the counter after each iteration","It ends the loop"], a:1},
+{q:"In the same for loop header, what is the role of <code>i &lt;= 5</code>?", o:["It changes the counter","It starts the counter","It controls whether another iteration occurs","It has no effect on the loop"], a:2},
+{q:"In the same for loop header, what is the role of <code>i++</code>?", o:["It starts the counter","It controls whether another iteration occurs","It changes (updates) the counter","It declares the loop variable"], a:2},
+{q:"Which loop checks its condition before executing the body, meaning it may execute zero times?", o:["do-while","while","for","switch"], a:1},
+{q:"Which loop is guaranteed to execute its body at least once before checking the condition?", o:["while","for","do-while","if-else"], a:2},
+{q:"What does <code>break</code> do when used inside a loop?", o:["Skips the current iteration only","Stops the entire loop","Restarts the loop from the beginning","Converts the loop into a switch"], a:1},
+{q:"What does <code>continue</code> do when used inside a loop?", o:["Stops the entire loop","Skips the current iteration and proceeds to the next iteration","Ends the program","Repeats the current iteration forever"], a:1},
+{q:"Nested loops (a loop inside another loop) are especially useful for:", o:["Declaring constants","Tables, patterns, and multidimensional data","Reading single characters","Ending a program early"], a:1},
+{q:"Given <code>for(int i=1;i&lt;=10;i++){ if(i==6) break; cout&lt;&lt;i&lt;&lt;\" \"; }</code>, what is the last number printed?", o:["6","10","5","9"], a:2},
+{q:"Given <code>for(int i=1;i&lt;=5;i++){ if(i==3) continue; cout&lt;&lt;i&lt;&lt;\" \"; }</code>, which number is skipped in the output?", o:["1","5","3","4"], a:2},
+{q:"Which loop type is most appropriate when initialization, condition, and update can all be expressed together?", o:["do-while","while","for","if-else"], a:2},
+{q:"For <code>if (age &gt;= 18 &amp;&amp; hasID) { cout &lt;&lt; \"Allowed\"; }</code> to print \"Allowed\", what must be true?", o:["Only age >= 18 needs to be true","Only hasID needs to be true","Either age >= 18 or hasID must be true","Both age >= 18 AND hasID must be true"], a:3},
+{q:"Which keyword introduces the alternative branch that runs when an if condition is false?", o:["then","else","case","default"], a:1},
+{q:"The practical Menu System program uses which combination of structures to keep showing the menu until the user chooses Exit?", o:["A for loop with break only","A do-while loop with a switch statement","An if-else ladder only","A nested array"], a:1},
+
+// ---------------- WEEK 9: ARRAYS, STRUCTURES, ENUMS, LINKED LISTS ----------------
+{q:"How are elements in a C++ array indexed?", o:["Starting from 1","Starting from 0 (zero-based)","Starting from -1","Indexes are assigned randomly"], a:1},
+{q:"Given <code>int grades[5] = {85, 90, 78, 92, 88};</code>, what is <code>grades[0]</code>?", o:["90","78","85","88"], a:2},
+{q:"Using the same array, what is <code>grades[4]</code>?", o:["92","88","85","Out of bounds"], a:1},
+{q:"What is the typical way to visit every element of an array using a loop?", o:["A single if statement","A for loop iterating from 0 to size-1","A switch statement","A do-while loop with no condition"], a:1},
+{q:"In <code>double average = static_cast&lt;double&gt;(sum) / 5;</code>, what does <code>static_cast&lt;double&gt;(sum)</code> accomplish?", o:["It rounds sum to the nearest integer","It converts sum to a double so the division keeps decimal precision","It deletes the value of sum","It converts sum into a string"], a:1},
+{q:"A two-dimensional array can be conceptually viewed as:", o:["A single list of values","Rows and columns","A linked list of nodes","A set of enumerations"], a:1},
+{q:"What C++ construct groups related variables, potentially of different data types, into one custom type?", o:["enum","struct","array","namespace"], a:1},
+{q:"How do you access a member of a struct variable, such as <code>s1</code>'s name field?", o:["s1->name","s1[name]","s1.name","s1::name"], a:2},
+{q:"What does an <code>enum</code> define?", o:["A dynamic array that can grow","A set of named values for a limited set of choices","A function that returns multiple values","A type of loop"], a:1},
+{q:"In <code>enum Status { Pending, Approved, Rejected };</code>, what is <code>Status</code>?", o:["A variable","The name of the new enumerated type","A function","A struct member"], a:1},
+{q:"What is a key difference in size behavior between a traditional array and a linked list?", o:["Arrays can grow or shrink; linked lists cannot","A traditional array's size is fixed after declaration, while a linked list can grow or shrink dynamically","Both have fixed size","Both grow dynamically"], a:1},
+{q:"How is an element typically accessed in an array compared to a linked list?", o:["Array = sequential traversal; linked list = direct index access","Array = direct index access; linked list = sequential traversal","Both require sequential traversal","Both allow direct index access"], a:1},
+{q:"What extra piece of storage does each linked list node need that a plain array element does not?", o:["A priority value","Link/pointer information to the next node","A duplicate copy of the data","A struct wrapper"], a:1},
+{q:"For <code>int grades[5]</code>, accessing <code>grades[5]</code> is considered:", o:["Valid, since arrays start at 1","An out-of-bounds error, since valid indexes are 0 through 4","A syntax error only","A logic error only, never a runtime issue"], a:1},
+{q:"Which of these is an example of a syntax error?", o:["A program that runs but produces the wrong calculation","A missing semicolon or closing brace","Accessing invalid memory at runtime","A loop that never ends"], a:1},
+{q:"Which of these describes a logic error?", o:["The compiler refuses to build the program","The program compiles and runs but produces an incorrect calculation","The program crashes due to invalid memory access","The program has a missing bracket"], a:1},
+{q:"Which of these describes a runtime error?", o:["A missing semicolon","A wrong calculation with no crash","Invalid memory access while the program is running","An infinite loop only"], a:2},
+{q:"What typically causes an infinite loop?", o:["The loop's condition never becomes false","The loop body is empty","The array index is out of bounds","A missing return statement"], a:0},
+{q:"Why is it a coding best practice to initialize variables before using them?", o:["It makes the code shorter","It avoids using unpredictable or garbage values","It is required for arrays only","It automatically fixes syntax errors"], a:1},
+{q:"Which best practice specifically helps prevent out-of-bounds errors?", o:["Using meaningful variable names","Avoiding accessing arrays outside their valid indexes","Compiling frequently","Using comments"], a:1},
+
+// ---------------- WEEK 11: QUEUES ----------------
+{q:"What ordering principle does a standard queue follow?", o:["LIFO (Last In, First Out)","FIFO (First In, First Out)","Random order","Priority order"], a:1},
+{q:"In a queue, which position identifies the element that is next to be removed?", o:["Rear","Front","Middle","Top"], a:1},
+{q:"In a queue, which position identifies where a new element is inserted?", o:["Front","Rear","Base","Head only"], a:1},
+{q:"Which operation adds an element to a queue?", o:["Dequeue","Peek","Enqueue","isFull"], a:2},
+{q:"Which operation removes the next element to be served from a queue?", o:["Enqueue","Dequeue","Rear","isEmpty"], a:1},
+{q:"Which operation views the front element of a queue without removing it?", o:["Dequeue","Enqueue","Peek/Front","isFull"], a:2},
+{q:"Which operation checks whether a queue contains no elements?", o:["isFull()","Peek()","isEmpty()","Rear()"], a:2},
+{q:"Which operation checks whether a fixed-capacity queue has reached its limit?", o:["isEmpty()","isFull()","Enqueue()","Front()"], a:1},
+{q:"Starting from queue [10, 20, 30], what element is removed by calling Dequeue()?", o:["30","20","10","None, the queue is empty"], a:2},
+{q:"What condition occurs when an insertion is attempted into a fixed-size queue that has no available capacity?", o:["Underflow","Overflow","Deadlock","Starvation"], a:1},
+{q:"What condition occurs when a removal is attempted from an empty queue?", o:["Overflow","Underflow","Overwrite","Rear error"], a:1},
+{q:"In a simple array-based linear queue, what problem can arise after several dequeue operations?", o:["The array size doubles automatically","Unused positions may remain at the beginning of the array","The rear pointer disappears","The queue becomes a stack"], a:1},
+{q:"What does a circular queue do differently from a basic linear queue?", o:["It removes the FIFO rule","It connects the last array position back to the first, allowing the rear to wrap around","It only allows deletion, never insertion","It sorts elements automatically"], a:1},
+{q:"Does using a circular queue change the FIFO order in which elements are served?", o:["Yes, it changes to LIFO","Yes, it becomes priority-based","No, it still follows FIFO — only how positions are reused changes","No, it removes the need for a front pointer"], a:2},
+{q:"Which type of queue processes elements according to assigned importance rather than arrival order?", o:["Circular queue","Linear queue","Priority queue","Deque"], a:2},
+{q:"What capability does a deque (double-ended queue) provide that a standard queue does not?", o:["Sorting elements automatically","Insertion and deletion at both the front and rear","Unlimited capacity by default","Priority-based processing"], a:1},
+{q:"Which real-world example matches: documents waiting to be printed and processed in order?", o:["Priority queue for hospitals","Printer queue","Circular linked list","Binary search"], a:1},
+{q:"Which classic algorithm uses a queue to manage the order in which nodes are explored?", o:["Depth-First Search (DFS)","Breadth-First Search (BFS)","Binary Search","Bubble Sort"], a:1},
+{q:"For a well-designed queue implementation, what is the typical time complexity of enqueue and dequeue?", o:["O(n)","O(log n)","O(1)","O(n^2)"], a:2},
+{q:"What can make a dequeue operation become O(n) instead of O(1)?", o:["Using a front index instead of shifting","Physically shifting every remaining element after removing from the front","Using a circular queue","Checking isEmpty() before removing"], a:1},
+
+// ---------------- WEEK 12: PRIORITY QUEUES ----------------
+{q:"A priority queue is best described as:", o:["A type of sorting algorithm only","An Abstract Data Type (ADT) that processes elements according to priority","A fixed-size array with no operations","A synonym for a linked list"], a:1},
+{q:"Instead of \"Who arrived first?\", a priority queue essentially asks:", o:["\"Who arrived last?\"","\"Who has the highest service priority?\"","\"Who is in the middle of the queue?\"","\"Is the queue full?\""], a:1},
+{q:"Which operation removes the element with the highest processing priority from a priority queue?", o:["Insert/Enqueue","Peek/Front","Delete/Dequeue","isEmpty()"], a:2},
+{q:"Which operation adds an element together with its priority to a priority queue?", o:["Delete/Dequeue","Insert/Enqueue","Peek/Front","isFull()"], a:1},
+{q:"In the worked example where lower numerical values mean higher priority (Emergency Shutdown=1, Antivirus Scan=2, System Backup=4, Email Sync=5), which task is processed first?", o:["Email Synchronization","System Backup","Emergency Shutdown","Antivirus Scan"], a:2},
+{q:"In an ascending (min-priority) queue, which element is processed first?", o:["The element with the largest priority value","The element with the smallest priority value","The element that arrived last","The element in the middle position"], a:1},
+{q:"Using a min-priority queue with A=5, B=1, C=3, what is the correct processing order?", o:["A, B, C","C, B, A","B, C, A","A, C, B"], a:2},
+{q:"In a descending (max-priority) queue, which element is processed first?", o:["The element with the smallest priority value","The element with the largest priority value","The element that arrived first","The element with priority 0"], a:1},
+{q:"Using a max-priority queue with A=5, B=1, C=3, what is the correct processing order?", o:["B, C, A","A, C, B","C, A, B","A, B, C"], a:1},
+{q:"When two elements in a priority queue share the same priority, what is a common tie-breaking rule?", o:["Process them in reverse alphabetical order","Process equal-priority elements in their arrival order","Always process the newest one first","Discard one of the elements"], a:1},
+{q:"Given A(2) arrives first, B(2) arrives second, and C(1) arrives third, what is the processing order (lower number = higher priority, ties broken by arrival order)?", o:["A, B, C","C, A, B","B, A, C","C, B, A"], a:1},
+{q:"In the memory allocation example, which two processes were assigned \"High\" priority?", o:["Video Editor and Music Player","Antivirus and System Update","Music Player and System Update","Antivirus and Video Editor"], a:1},
+{q:"Compared to a standard queue, is a priority field normally required?", o:["Yes, a priority field is required in a priority queue but normally not required in a standard queue","No, neither queue type ever needs a priority field","Yes, both types require a priority field","No, only standard queues require it"], a:0},
+{q:"Per the lecture's comparison table, what is a typical use case for a standard queue versus a priority queue?", o:["Standard = emergency handling; Priority = waiting lines","Standard = waiting lines/buffers; Priority = scheduling/emergency handling","Both are used only for scheduling","Both are used only for buffers"], a:1},
+{q:"Which application allows critical patients to be treated before less urgent ones, even if they arrived later?", o:["Printer queue","Emergency room triage (priority queue)","Circular queue in networking","Standard FIFO queue"], a:1},
+{q:"In networking, how do priority queues help with packet handling?", o:["They discard all packets equally","They allow time-sensitive traffic to be handled before lower-priority traffic","They convert packets into a linked list","They always process packets in arrival order only"], a:1},
+{q:"What problem can occur in priority-based scheduling if low-priority tasks are continually postponed?", o:["Overflow","Underflow","Starvation","Deadlock"], a:2},
+{q:"Which of the following were mentioned as ways to conceptually implement a priority queue?", o:["Only heap-based implementation exists","Simple array, sorted, unsorted, and heap-based implementations","Only linked-list implementation exists","Only circular array implementation exists"], a:1},
+{q:"What is the core distinction between a standard queue and a priority queue?", o:["A standard queue never removes elements","A priority queue removes elements based on priority rather than simply on arrival order","A priority queue can only hold one element at a time","There is no real distinction between them"], a:1},
+{q:"Priority queues are widely useful in which of these areas, as discussed in the lecture?", o:["Only in video games","Scheduling, operating systems, networking, healthcare, and resource management","Only in spreadsheet software","Only in file compression"], a:1},
+];
+
+// ---- state ----
+let currentAnswers = new Array(QUESTIONS.length).fill(null);
+let graded = false;
+
+const quizBody = document.getElementById('quizBody');
+const progressBar = document.getElementById('progressBar');
+const progressCount = document.getElementById('progressCount');
+const submitBar = document.getElementById('submitBar');
+const submitBtn = document.getElementById('submitBtn');
+const resultsPanel = document.getElementById('resultsPanel');
+const scoreNum = document.getElementById('scoreNum');
+const scorePct = document.getElementById('scorePct');
+const scoreMsg = document.getElementById('scoreMsg');
+const retryBtn = document.getElementById('retryBtn');
+const reviewBtn = document.getElementById('reviewBtn');
+const unansweredNote = document.getElementById('unansweredNote');
+
+function renderQuiz(){
+  quizBody.innerHTML = '';
+  QUESTIONS.forEach((item, qi) => {
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.id = 'qcard-' + qi;
+
+    const num = document.createElement('span');
+    num.className = 'qnum';
+    num.textContent = 'Question ' + (qi+1) + ' of ' + QUESTIONS.length;
+    card.appendChild(num);
+
+    const qtext = document.createElement('p');
+    qtext.className = 'qtext';
+    qtext.innerHTML = item.q;
+    card.appendChild(qtext);
+
+    const opts = document.createElement('div');
+    opts.className = 'options';
+
+    item.o.forEach((optText, oi) => {
+      const label = document.createElement('label');
+      label.className = 'option';
+      label.id = 'opt-' + qi + '-' + oi;
+
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'q' + qi;
+      input.value = oi;
+      input.addEventListener('change', () => {
+        currentAnswers[qi] = oi;
+        updateSelectedStyles(qi);
+        updateProgress();
+      });
+
+      const span = document.createElement('span');
+      span.innerHTML = optText;
+
+      label.appendChild(input);
+      label.appendChild(span);
+      opts.appendChild(label);
+    });
+
+    card.appendChild(opts);
+    quizBody.appendChild(card);
+  });
+  updateProgress();
+}
+
+function updateSelectedStyles(qi){
+  QUESTIONS[qi].o.forEach((_, oi) => {
+    const lbl = document.getElementById('opt-' + qi + '-' + oi);
+    if(currentAnswers[qi] === oi){
+      lbl.classList.add('selected');
+    } else {
+      lbl.classList.remove('selected');
+    }
+  });
+}
+
+function updateProgress(){
+  const answered = currentAnswers.filter(a => a !== null).length;
+  progressBar.style.width = (answered / QUESTIONS.length * 100) + '%';
+  progressCount.textContent = answered + '/' + QUESTIONS.length;
+}
+
+function gradeQuiz(){
+  const answered = currentAnswers.filter(a => a !== null).length;
+  if(answered < QUESTIONS.length){
+    unansweredNote.style.display = 'block';
+    unansweredNote.textContent = 'You still have ' + (QUESTIONS.length - answered) + ' unanswered question(s). Please answer all questions before submitting, or scroll up to review.';
+    unansweredNote.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  unansweredNote.style.display = 'none';
+
+  let score = 0;
+  QUESTIONS.forEach((item, qi) => {
+    const isCorrect = currentAnswers[qi] === item.a;
+    if(isCorrect) score++;
+
+    const card = document.getElementById('qcard-' + qi);
+    card.classList.add('graded');
+
+    item.o.forEach((_, oi) => {
+      const lbl = document.getElementById('opt-' + qi + '-' + oi);
+      const input = lbl.querySelector('input');
+      input.disabled = true;
+      lbl.classList.remove('selected');
+      if(oi === item.a){
+        lbl.classList.add('correct-answer');
+      } else if(oi === currentAnswers[qi] && !isCorrect){
+        lbl.classList.add('wrong-answer');
+      }
+    });
+
+    const verdict = document.createElement('div');
+    verdict.className = 'verdict ' + (isCorrect ? 'ok' : 'no');
+    verdict.textContent = isCorrect ? '✓ Correct' : '✗ Incorrect — correct answer highlighted above';
+    card.appendChild(verdict);
+  });
+
+  graded = true;
+  submitBar.style.display = 'none';
+
+  const pct = Math.round((score / QUESTIONS.length) * 100);
+  scoreNum.textContent = score + '/' + QUESTIONS.length;
+  scorePct.textContent = pct + '%';
+
+  let msg = '';
+  if(pct >= 90) msg = "Excellent work — you've clearly mastered this material.";
+  else if(pct >= 75) msg = "Good job — you passed. Review the missed items to sharpen a few gaps.";
+  else if(pct >= 50) msg = "You're getting there. Go back over queues, priority queues, and the C++ basics you missed.";
+  else msg = "This topic needs more review. Go through each week's lecture again, then retry.";
+  scoreMsg.textContent = msg;
+
+  resultsPanel.classList.add('show');
+  resultsPanel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function resetQuiz(){
+  currentAnswers = new Array(QUESTIONS.length).fill(null);
+  graded = false;
+  resultsPanel.classList.remove('show');
+  submitBar.style.display = 'flex';
+  unansweredNote.style.display = 'none';
+  renderQuiz();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+submitBtn.addEventListener('click', gradeQuiz);
+retryBtn.addEventListener('click', resetQuiz);
+reviewBtn.addEventListener('click', () => {
+  quizBody.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+renderQuiz();
+</script>
+</body>
+</html>
